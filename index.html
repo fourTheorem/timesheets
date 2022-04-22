@@ -118,15 +118,46 @@
 		#intro-person { font-size: 200%; }
 		#roleInput { font-size: 20px }
 		#reportInput { font-size: 22px }
+		.pulsingButton {
+			width: 220px;
+			text-align: center;
+			white-space: nowrap;
+			display: block;
+			margin: 50px auto;
+			padding: 10px;
+			box-shadow: 0 0 0 0 rgba(232, 76, 61, 0.7);
+			border-radius: 10px;
+			background-color: #FF0000;
+			-webkit-animation: pulsing 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+			-moz-animation: pulsing 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+			-ms-animation: pulsing 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+			animation: pulsing 1.25s infinite cubic-bezier(0.66, 0, 0, 1);
+			font-size: 22px;
+			font-weight: normal;
+			font-family: sans-serif;
+			text-decoration: none !important;
+			color: #ffffff;
+			transition: all 300ms ease-in-out;
+		}
+		.pulsingButton:hover {
+			-webkit-animation: none;
+			-moz-animation: none;
+			-ms-animation: none;
+			animation: none;
+			color: #ffffff;
+		}
+		@-webkit-keyframes pulsing { to { box-shadow: 0 0 0 30px rgba(232, 76, 61, 0) } }
+		@-moz-keyframes pulsing { to { box-shadow: 0 0 0 30px rgba(232, 76, 61, 0) } }
+		@-ms-keyframes pulsing { to { box-shadow: 0 0 0 30px rgba(232, 76, 61, 0) } }
+		@keyframes pulsing { to { box-shadow: 0 0 0 30px rgba(232, 76, 61, 0) } }
 	</style>
   </head>
   <body>
-    <!--Add buttons to initiate auth sequence and sign out-->
 	<div class="loginBox">
 		<span id="intro-person"></span>
-		<button id="authorize_button" style="display: none; float:right; font-size: 24px">Authorize</button>
+		<button id="authorize_button" class="pulsingButton" style="display: none; float:right; font-size: 24px">Authorize</button>
 		<button id="signout_button" style="display: none; float:right; font-size: 24px">Sign Out</button>
-		<br>
+		<br><br><br><br><br>
 		<div class="flexRows">
 			<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
 			<div id="company-name"></div>
@@ -192,6 +223,7 @@
 		authorizeButton.style.display = signIn ? 'none' : 'block'
 		signoutButton.style.display = signIn ? 'block' : 'none'
 		signIn && main(authInstance)
+		signIn && authorizeButton.remove()
 	}
 
 	function initClient() {
@@ -208,6 +240,7 @@
 			authInstance.isSignedIn.listen(updateSigninStatus)
 			updateSigninStatus(authInstance)
 			authorizeButton.onclick = e => authInstance.signIn()
+				.then(() => updateSigninStatus(authInstance))
 			signoutButton.onclick = e => authInstance.signOut()
 		})
 	}
