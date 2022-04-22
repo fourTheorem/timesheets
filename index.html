@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Fourtheorem Report System</title>
+    <meta charset="utf-8" />
+	<!-- React -->
+	<script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+	<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+
+	<!-- DatePicker and dependencies-->
+	<script src="https://cdn.jsdelivr.net/npm/date-object@latest/dist/umd/date-object.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/react-element-popper@latest/build/browser.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/react-multi-date-picker@latest/build/browser.min.js"></script>
+
+	<!-- Optional Plugin -->
+	<script src="https://cdn.jsdelivr.net/npm/react-multi-date-picker@latest/build/date_picker_header.browser.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/react-multi-date-picker@latest/build/date_panel.browser.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/date-holidays@latest/dist/umd.min.js"></script>
+	<!-- Production Tooltip -->
+	<script src="https://unpkg.com/@popperjs/core@2"></script>
+	<script src="https://unpkg.com/tippy.js@6"></script>
+	<style>
+		body {
+			border: 0; margin: 0;
+			font-size: x-large;
+			/* font-size: larger;
+			font-size: 0.8em;
+			font-size: 80%; */
+			/* font-size: inherit; */
+		}
+		.loginBox {background: #a23338; color:#f5c571;border-radius: 4px; width: 30vw; float:right;margin: 20px;padding:10px;}
+		.reportBox {width: 98%; height: 80px}
+		.p480 { width: 100%; visibility: hidden; height: 0px }
+		.flexBox { display:flex; justify-content: center; align-items: center; flex-direction: column; }
+		.flexRows {
+			display:flex; flex-direction: row; 
+			background: #293450; color: #ffdd84; padding: 10px; line-height: 200%; padding: 3px; border-radius: 4px 
+		}
+		.flexRows > div { margin: 20px }
+		.button, #submitInput {
+			display:inline-block;
+			padding:0.7em 1.7em;
+			margin:0 0.3em 0.3em 0;
+			border-radius:0.2em;
+			box-sizing: border-box;
+			text-decoration:none;
+			font-family:'Roboto',sans-serif;
+			font-weight:400;
+			background-color:#3369ff;
+			box-shadow:inset 0 -0.6em 1em -0.35em rgba(0,0,0,0.17),inset 0 0.6em 2em -0.3em rgba(255,255,255,0.15),inset 0 0 0em 0.05em rgba(255,255,255,0.12);
+			text-align:center;
+			position:relative;
+			background-color:#CCCCCC; color:#000000
+		 }
+		 .button:hover, #submitInput:hover  {  box-shadow:inset 0 0.6em 2em -0.3em rgba(0,0,0,0.15),inset 0 0 0em 0.05em rgba(255,255,255,0.12) }
+		 .button-today, #submitInput { background-color:#2979FF; color:#fff }
+		 input[type='radio']:after {
+			width: 13px;
+			height: 13px;
+			border-radius: 13px;
+			position: relative;
+			background-color: #d1d3d1;
+			content: '';
+			display: inline-block;
+			visibility: visible;
+			border: 2px solid white;
+		}
+
+		input[type='radio']:checked:after {
+			width: 13px;
+			height: 13px;
+			border-radius: 13px;
+			position: relative;
+			background-color: limegreen;
+			content: '';
+			display: inline-block;
+			visibility: visible;
+			border: 2px solid white;
+		}
+		.lds-roller {
+			display: inline-block;
+			position: relative;
+			width: 80px;
+			height: 80px;
+		}
+		.lds-roller div {
+			animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+			transform-origin: 40px 40px;
+		}
+		.lds-roller div:after {
+			content: " ";
+			display: block;
+			position: absolute;
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			background: #fff;
+			margin: -4px 0 0 -4px;
+		}
+		.lds-roller div:nth-child(1) {
+			animation-delay: -0.036s;
+		}
+		.lds-roller div:nth-child(1):after {
+			top: 63px;
+			left: 63px;
+		}
+		.lds-roller div:nth-child(2) {
+			animation-delay: -0.072s;
+		}
+		.lds-roller div:nth-child(2):after {
+			top: 68px;
+			left: 56px;
+		}
+		.lds-roller div:nth-child(3) {
+			animation-delay: -0.108s;
+		}
+		.lds-roller div:nth-child(3):after {
+			top: 71px;
+			left: 48px;
+		}
+		.lds-roller div:nth-child(4) {
+			animation-delay: -0.144s;
+		}
+		.lds-roller div:nth-child(4):after {
+			top: 72px;
+			left: 40px;
+		}
+		.lds-roller div:nth-child(5) {
+			animation-delay: -0.18s;
+		}
+		.lds-roller div:nth-child(5):after {
+			top: 71px;
+			left: 32px;
+		}
+		.lds-roller div:nth-child(6) {
+			animation-delay: -0.216s;
+		}
+		.lds-roller div:nth-child(6):after {
+			top: 68px;
+			left: 24px;
+		}
+		.lds-roller div:nth-child(7) {
+			animation-delay: -0.252s;
+		}
+		.lds-roller div:nth-child(7):after {
+			top: 63px;
+			left: 17px;
+		}
+		.lds-roller div:nth-child(8) {
+			animation-delay: -0.288s;
+		}
+		.lds-roller div:nth-child(8):after {
+			top: 56px;
+			left: 12px;
+		}
+		@keyframes lds-roller {
+			0% {
+				transform: rotate(0deg);
+			}
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+		#parentInput { display: flex; flex-direction: column }
+		#intro-person { font-size: 200%; }
+		#roleInput { font-size: 20px }
+		#reportInput { font-size: 22px }
+	</style>
+  </head>
+  <body>
+    <!--Add buttons to initiate auth sequence and sign out-->
+	<div class="loginBox">
+		<span id="intro-person"></span>
+		<button id="authorize_button" style="display: none; float:right; font-size: 24px">Authorize</button>
+		<button id="signout_button" style="display: none; float:right; font-size: 24px">Sign Out</button>
+		<br>
+		<div class="flexRows">
+			<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+			<div id="company-name"></div>
+			<div id="company-time"></div>
+		</div>
+	</div>
+
+
+	<div class="flexBox">
+		<div id="datePickerWithPlugin"></div>
+	</div>
+    <script type="text/javascript">
+	// ---------------------------------------------------------- Utilities ------------------------------------------------------------------
+	const $ = id => document.querySelector(id)
+	const HEADER_SPACE = 5
+	const { Calendar } = ReactMultiDatePicker
+	const holidays = new Holidays.default('IE')
+	// console.log(holidays.getHolidays(2022)) 	
+	// things considered ...
+	// 	`https://api.allorigins.win/get?url=${encodeURIComponent(https://holidays.abstractapi.com/v1/?api_key=4578fa60829e4d8bbd0f7cbd576638c1&country=IE&year=2022&month=4&day=22)}`
+	const fuzzyMatch = (pattern, str) => new RegExp('.*' + pattern.split('').join('.*') + '.*').test(str)
+	const setAttributes = (element, props) => {
+		for (const prop in props) {
+			props[prop] && element.setAttribute(prop, props[prop])
+		}
+	}
+	const sheetColumn = (N, L=26) => (N >= L ? String.fromCharCode('A'.charCodeAt(0) + Math.floor(N / L) - 1) : '') + String.fromCharCode('A'.charCodeAt(0) + N % L)
+	const radioButtons = ({name, options, onChanged}) => {
+		const group = document.getElementById(name)
+		for (const o of options) {
+			const div = document.createElement('div')
+			
+			const input = document.createElement('input')
+			setAttributes(input, {type: 'radio', name, value: o.id, id: o.id, checked: o.default})
+			div.appendChild(input)
+			
+			const label = document.createElement('label')
+			label.setAttribute('for', o.id)
+			label.innerText = ' ' + o.name
+			div.appendChild(label)
+			
+			group.appendChild(div)
+			
+			onChanged && input.addEventListener('change', onChanged)
+			onChanged && o.default && onChanged({currentTarget: input})
+		}		
+	}
+
+	const getSheetOptions = (spreadSheets, name) => spreadSheets.filter(spreadsheet => spreadsheet.people.has(name)).map((o, i) => ({id: o.id, name: o.name, default: !i}))
+	const reportAlreadySubmitted = (sheet, selectedDates) => selectedDates
+		.map(date => sheet.data[`${date.day} ${date.month.name} ${date.year}`])
+		.every(({holiday, days, notes}) => holiday || days && notes)
+
+	// ---------------------------------------------------------- Auth ------------------------------------------------------------------
+
+
+	// https://console.cloud.google.com/apis/api/sheets.googleapis.com/credentials?project=sheetsapp-347722
+	const authorizeButton = $('#authorize_button')
+	const signoutButton = $('#signout_button')
+	
+	function updateSigninStatus(authInstance) {
+		const signIn = authInstance.isSignedIn?.get()
+		authorizeButton.style.display = signIn ? 'none' : 'block'
+		signoutButton.style.display = signIn ? 'block' : 'none'
+		signIn && main(authInstance)
+	}
+
+	function initClient() {
+		gapi.client.init({
+			apiKey: 'AIzaSyCSuBQLFDjVDOSfugc7q5BiuzwgJEbxOV8',
+			clientId: '154607706951-5ptqd8j1niak9vulpq2fl20g1fggd1n8.apps.googleusercontent.com',
+			discoveryDocs: [
+				'https://sheets.googleapis.com/$discovery/rest?version=v4',
+				'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+			],
+			scope: "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive"
+		}).then(() => {
+			const authInstance = gapi.auth2.getAuthInstance()
+			authInstance.isSignedIn.listen(updateSigninStatus)
+			updateSigninStatus(authInstance)
+			authorizeButton.onclick = e => authInstance.signIn()
+			signoutButton.onclick = e => authInstance.signOut()
+		})
+	}
+
+	// ---------------------------------------------------------- Sheets ------------------------------------------------------------------
+
+	async function getFolderId({driveId, folderName}) {
+		return (await gapi.client.drive.files.list({
+			driveId,
+			corpora: 'drive',
+			supportsAllDrives: true,
+			includeItemsFromAllDrives: true,
+			fields: 'nextPageToken, files(id, name)',
+			q: `mimeType='application/vnd.google-apps.folder' and name='${folderName}'`
+		})).result.files.find(file => file.name === folderName).id
+	}
+
+	async function getSpreadSheetFiles({driveId, folderId, exclude=[]}) {
+		return (await gapi.client.drive.files.list({
+			driveId,
+			corpora: 'drive',
+			supportsAllDrives: true,
+			includeItemsFromAllDrives: true,
+			fields: 'nextPageToken, files(id, name)',
+			q: `'${folderId}' in parents and mimeType='application/vnd.google-apps.spreadsheet'`,
+			orderBy: 'folder,modifiedTime desc,name',
+		})).result.files.filter(file => exclude.every(name => !file.name.includes(name)))
+	}
+
+	async function getSheetNames(spreadSheets) {
+		return Object.fromEntries((await Promise.all(spreadSheets.map(({id, name, sheets}) => gapi.client.sheets.spreadsheets.values.batchGetByDataFilter({
+			spreadsheetId: id,
+			resource: {
+				dataFilters: sheets.map(sheet => ({
+					gridRange: {
+						sheetId: sheet.id,
+						startRowIndex: HEADER_SPACE - 1, // where the Person columns are located
+						endRowIndex: HEADER_SPACE,
+						startColumnIndex: 1,	// skip the first one, as its just Person
+						endColumnIndex: sheet.columns,
+					}
+				}))
+			}
+		})))).map(({result}) => [
+			result.spreadsheetId,
+			Object.fromEntries(result.valueRanges.map(({valueRange}) => [valueRange.range.split('!')[0], valueRange.values?.[0].filter(x => x) || []]))
+		]))
+	}
+
+	async function addSheetNames(spreadSheets) {
+		const sheetsToNames = await getSheetNames(spreadSheets)
+
+		for (const spreadsheet of spreadSheets) {
+			const sheetNamesToPeople = sheetsToNames[spreadsheet.id] || {}
+			for (const sheet of spreadsheet.sheets) {
+				sheet.people = [...new Set(sheetNamesToPeople[sheet.name] || [])]
+				sheet.people.map(p => spreadsheet.people.add(p))
+			}
+		}
+	}
+
+	// cache gapi.client.sheets.spreadsheets.get request hash into localStorage
+
+	async function getSpreadSheets({driveId, folderId, exclude=[]}) {
+		const companies = await getSpreadSheetFiles({driveId, folderId, exclude })
+		const spreadSheets = (await Promise.all(companies.map(company => gapi.client.sheets.spreadsheets.get({spreadsheetId: company.id}))))
+			.map(file => ({
+				id: file.result.spreadsheetId,
+				name: file.result.properties.title,
+				sheets: file.result.sheets.map(sheet => ({
+					id: sheet.properties.sheetId,
+					name: sheet.properties.title,
+					index: sheet.properties.index,
+					columns: (sheet.properties.gridProperties.columnCount + (sheet.properties.gridProperties.frozenColumnCount || 0)) || 42
+				})),
+				people: new Set()
+			}))
+		await addSheetNames(spreadSheets)
+		return spreadSheets
+	}
+
+	// spreadsheets[sheets[sheet{data{'01 April 2022':{holiday, y, x, days, notes, role}}}]]
+	async function loadSheetData(spreadsheetId, sheet, fullName) {
+		const range = `'${sheet.name}'!A${HEADER_SPACE}:${sheetColumn(sheet.columns)}`
+		const table = (await gapi.client.sheets.spreadsheets.values.get({spreadsheetId, range})).result.values
+		sheet.data = {}
+		// skips the first 2 headers
+		for (let y = 2; y < table.length; y++) {
+			const date = table[y][0]
+			// check if date column is still there
+			if (isNaN(new Date(date))) break
+			sheet.data[date] = {
+				holiday: (holidays.isHoliday(new Date(date)) || []).find(h => h.type == 'public')?.name || '',
+				y: y + HEADER_SPACE,
+				x: table[0].filter(name => name).slice(1).map((name, index) => ({name, index})).find(o => o.name.includes(fullName))?.index * 3 + 1
+			}
+			// itterate through all the people, skip date column
+			for (let x = 1; x < table[y].length; x += 3) {
+				const name = table[0].slice(x, x + 3).join('')
+				fuzzyMatch(fullName, name) && Object.assign(sheet.data[date], {
+					days: table[y][x] || '0',
+					notes: table[y][x + 1] || '',
+					role: table[y][x + 2] || ''
+				})
+			}
+		}
+	}
+
+
+	// ---------------------------------------------------------- UI ------------------------------------------------------------------
+	const state = {}
+	function updateSheet(sheet, dates, response) {
+		console.log(response.result)
+		for (const date in dates) {
+			const [days, notes, role] = dates[date].values
+			Object.assign(sheet.data[date], { days, notes, role })
+		}
+	}
+
+	const hideReportBox = (div, text, input) => {
+		div.style.height = '0px'
+		div.style.visibility = 'hidden'
+		text.value = input.value = ''
+	}
+
+	function ChangeDate(selectedDates) {
+		const { spreadsheetId, sheet } = state
+		const div = $('#parentInput')
+		const button = $('#submitInput')
+		const text = $('#reportInput')
+		const input = $('#roleInput')
+
+		hideReportBox(div, text, input)
+		if (!selectedDates.length || reportAlreadySubmitted(sheet, selectedDates)) return // console.log('>>>', selectedDates, sheet.data)
+		// make sure to deselect all invalid dates
+		div.style.visibility = 'visible'
+		div.style.height = 'auto'
+
+		const dates = Object.fromEntries(selectedDates
+			.map(date => `${date.day} ${date.month.name} ${date.year}`)
+			.map(date => ({date, ...sheet.data[date]}))
+			.map(({date, y, x}) => [date, {
+				range: `'${sheet.name}'!${sheetColumn(x)}${y}:${sheetColumn(x + 2)}${y}`,
+				values: [ [$('input[name="company-time"]:checked').id, text.value, input.value] ]
+			}])
+		)
+		button.onclick = e => {
+			gapi.client.sheets.spreadsheets.values
+				.batchUpdate({ spreadsheetId, resource: { data: Object.values(dates), valueInputOption: 'USER_ENTERED' } })
+				.then(response => updateSheet(sheet, dates, response))
+			hideReportBox(div, text, input)
+		}
+	}
+
+	function processDay({date, today, selectedDate, currentMonth, isSameDate, sheet }) {
+		if (!sheet) return
+		const isWeekend = [0, 6].includes(date.weekDay.index)  		
+		const {days, notes, role, holiday, xy} = sheet.data[`${date.day} ${date.month.name} ${date.year}`]
+		const title = holiday || notes
+		const isToday = isSameDate(date, today)
+		const isFullDay = days === '1' 
+		const isHalfDay = parseFloat(days) < 1 && parseFloat(days) > 0 
+		const selected = isSameDate(date, selectedDate)
+		const color = isToday && 'green' || isFullDay && 'limegreen' || isHalfDay && 'yellow' || selected && '#777'
+		return {
+			style: {
+				borderRadius: '50%',
+				backgroundColor: selected ? "#a5a5a5" : date.month.index === currentMonth.index && '#ccc',	// This Month
+				border: color && `1px solid ${color}`,
+				color: selected && "#0074d9",
+				fontWeight: selected && "bold",
+				background: selected && '#0074d9!important',
+				boxShadow: selected && '0 0 3px #8798ad'
+			},
+			disabled: isWeekend || isFullDay || isHalfDay || holiday,
+			class: isWeekend && 'highlight highlight-red',
+			onMouseLeave: e => e.relatedTarget._tippy?.destroy(),
+			onMouseOver: e => title && !e.currentTarget._tippy && tippy(e.currentTarget, { content: title })
+		}
+	}
+
+
+	function loadUI() {
+		ReactDOM.render(
+			React.createElement(Calendar, {
+				plugins: [
+					React.createElement(DatePickerHeader, {position: 'right', size: 'medium'}),
+					React.createElement(DatePanel, {position: 'right', sort: 'date',  eachDaysInRange: true}),
+					React.createElement(({ handleChange, position, calendarProps, nodes, names, handleFocusedDate, DatePicker, ...props}) =>
+						React.createElement('div', {className: ['rmdp-toolbar', 'bottom', 'rmdp-border-bottom'].join(' '), children: [
+							React.createElement('div', { className: 'button button-today', onClick: () => {
+								const today = new DateObject({ calendar: props.state.calendar, locale: props.state.date.locale, format: props.state.format })
+								const selectedDate = reportAlreadySubmitted(state.sheet, [today]) ? [] : [today]
+								handleFocusedDate(today, handleChange(selectedDate, { ...props.state, selectedDate }))
+							}}, 'Today'),
+							React.createElement('div', {
+								className: 'button deselect',
+								onClick: () => handleFocusedDate(handleChange([], { ...props.state, selectedDate: [] }))
+							}, 'Deselect')
+						] }), {position: 'bottom'}
+					),
+					React.createElement(({ state, handleChange, position, calendarProps, nodes, names, handleFocusedDate, DatePicker, ...props}) =>
+						React.createElement('div', {className: ['rmdp-toolbar', 'bottom', 'rmdp-border-bottom'].join(' '), children: [
+							React.createElement('div', { id: 'parentInput', className: 'p480', children: [
+								React.createElement('input', { id: 'roleInput', placeholder: 'Role: E.g. Architect' }),
+								React.createElement('textarea', { id: 'reportInput', className: 'reportBox', placeholder: 'What did you do?' }),
+								React.createElement('button', { id: 'submitInput', placeholder: 'Submit' }, 'Submit Report'),
+							]})
+						] }), {position: 'bottom'}
+					)
+				],
+				onChange: ChangeDate,
+				value: [], 
+				multiple: true,
+				onlyMonthPicker: false,
+				onlyYearPicker: false,
+				format:	'DD/MM/YYYY',
+				weekStartDayIndex: 1,
+				mapDays: o => processDay({ ...o, ...state })
+			}),
+			document.getElementById("datePickerWithPlugin")
+		)
+	}
+
+	async function main(authInstance) {
+		const fullName = authInstance.currentUser.get().getBasicProfile().getName()
+		$('#intro-person').innerText = fullName
+		loadUI()
+
+		const driveId = '0AEEJTsIdzOw3Uk9PVA'
+		const spreadSheets = await getSpreadSheets({
+			driveId,
+			folderId: await getFolderId({driveId, folderName: 'timesheets'}),
+			exclude: ['2017', '2018', '2019', '2020', '2021']
+		})
+
+		radioButtons({name: 'company-time', options: [
+			{ id: 1, name: '⏳ Full Day', default: true },
+			{ id: 0.5, name: '⌛ Half Day'},
+			{ id: 0, name: '🚫 Off' }
+		]})
+
+		radioButtons({name: 'company-name', options: getSheetOptions(spreadSheets, fullName), onChanged: async e => {
+			$('.lds-roller').style.visibility = 'visible'
+			const spreadsheetId = state.spreadsheetId = e.currentTarget.id
+			const spreadSheet = spreadSheets.find(spreadSheet => spreadSheet.id === spreadsheetId)
+			const thisMonth = new Date().toLocaleString('en', { month: 'long' }) // there is another way through the library => new DateObject(new Date()).
+			const sheet = state.sheet = spreadSheet.sheets.find(sheet => sheet.name === thisMonth)
+			// console.log('sheet loaded')
+			await loadSheetData(spreadsheetId, sheet, fullName)
+			$('.deselect')?.click()
+			$('.button-today')?.click()
+			$('.lds-roller').style.visibility = 'hidden'
+		}})
+	}
+    </script>
+
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};gapi.load('client:auth2', initClient)"
+      onreadystatechange="this.readyState === 'complete' && this.onload()">
+    </script>
+  </body>
+</html>
