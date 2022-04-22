@@ -23,10 +23,7 @@
 		body {
 			border: 0; margin: 0;
 			font-size: x-large;
-			/* font-size: larger;
-			font-size: 0.8em;
-			font-size: 80%; */
-			/* font-size: inherit; */
+			background: #ccc;
 		}
 		.loginBox {background: #a23338; color:#f5c571;border-radius: 4px; width: 30vw; float:right;margin: 20px;padding:10px;}
 		.reportBox {width: 98%; height: 80px}
@@ -34,7 +31,7 @@
 		.flexBox { display:flex; justify-content: center; align-items: center; flex-direction: column; }
 		.flexRows {
 			display:flex; flex-direction: row; 
-			background: #293450; color: #ffdd84; padding: 10px; line-height: 200%; padding: 3px; border-radius: 4px 
+			background: #293450; color: #ffdd84; line-height: 200%; padding: 3px; border-radius: 4px 
 		}
 		.flexRows > div { margin: 20px }
 		.button, #submitInput {
@@ -97,69 +94,25 @@
 			background: #fff;
 			margin: -4px 0 0 -4px;
 		}
-		.lds-roller div:nth-child(1) {
-			animation-delay: -0.036s;
-		}
-		.lds-roller div:nth-child(1):after {
-			top: 63px;
-			left: 63px;
-		}
-		.lds-roller div:nth-child(2) {
-			animation-delay: -0.072s;
-		}
-		.lds-roller div:nth-child(2):after {
-			top: 68px;
-			left: 56px;
-		}
-		.lds-roller div:nth-child(3) {
-			animation-delay: -0.108s;
-		}
-		.lds-roller div:nth-child(3):after {
-			top: 71px;
-			left: 48px;
-		}
-		.lds-roller div:nth-child(4) {
-			animation-delay: -0.144s;
-		}
-		.lds-roller div:nth-child(4):after {
-			top: 72px;
-			left: 40px;
-		}
-		.lds-roller div:nth-child(5) {
-			animation-delay: -0.18s;
-		}
-		.lds-roller div:nth-child(5):after {
-			top: 71px;
-			left: 32px;
-		}
-		.lds-roller div:nth-child(6) {
-			animation-delay: -0.216s;
-		}
-		.lds-roller div:nth-child(6):after {
-			top: 68px;
-			left: 24px;
-		}
-		.lds-roller div:nth-child(7) {
-			animation-delay: -0.252s;
-		}
-		.lds-roller div:nth-child(7):after {
-			top: 63px;
-			left: 17px;
-		}
-		.lds-roller div:nth-child(8) {
-			animation-delay: -0.288s;
-		}
-		.lds-roller div:nth-child(8):after {
-			top: 56px;
-			left: 12px;
-		}
+		.lds-roller div:nth-child(1) { animation-delay: -0.036s }
+		.lds-roller div:nth-child(1):after { top: 63px; left: 63px }
+		.lds-roller div:nth-child(2) { animation-delay: -0.072s }
+		.lds-roller div:nth-child(2):after { top: 68px; left: 56px }
+		.lds-roller div:nth-child(3) { animation-delay: -0.108s }
+		.lds-roller div:nth-child(3):after { top: 71px; left: 48px }
+		.lds-roller div:nth-child(4) { animation-delay: -0.144s }
+		.lds-roller div:nth-child(4):after { top: 72px; left: 40px }
+		.lds-roller div:nth-child(5) { animation-delay: -0.18s }
+		.lds-roller div:nth-child(5):after { top: 71px; left: 32px }
+		.lds-roller div:nth-child(6) { animation-delay: -0.216s }
+		.lds-roller div:nth-child(6):after { top: 68px; left: 24px }
+		.lds-roller div:nth-child(7) { animation-delay: -0.252s }
+		.lds-roller div:nth-child(7):after { top: 63px;left: 17px }
+		.lds-roller div:nth-child(8) { animation-delay: -0.288s }
+		.lds-roller div:nth-child(8):after { top: 56px; left: 12px }
 		@keyframes lds-roller {
-			0% {
-				transform: rotate(0deg);
-			}
-			100% {
-				transform: rotate(360deg);
-			}
+			0% { transform: rotate(0deg) }
+			100% { transform: rotate(360deg) }
 		}
 		#parentInput { display: flex; flex-direction: column }
 		#intro-person { font-size: 200%; }
@@ -179,6 +132,8 @@
 			<div id="company-name"></div>
 			<div id="company-time"></div>
 		</div>
+		<br>
+		<button style="float: right; font-size: 22px; margin: 10px" onclick="localStorage.clear();window.location.href=window.location.href">Clear Cache</button>
 	</div>
 
 
@@ -228,8 +183,6 @@
 		.every(({holiday, days, notes}) => holiday || days && notes)
 
 	// ---------------------------------------------------------- Auth ------------------------------------------------------------------
-
-
 	// https://console.cloud.google.com/apis/api/sheets.googleapis.com/credentials?project=sheetsapp-347722
 	const authorizeButton = $('#authorize_button')
 	const signoutButton = $('#signout_button')
@@ -259,10 +212,46 @@
 		})
 	}
 
-	// ---------------------------------------------------------- Sheets ------------------------------------------------------------------
+	// ---------------------------------------------------------- Cache ------------------------------------------------------------------
+	const store = (key, value, ttl=24 * 60 * 60 * 1000) => {
+		localStorage.setItem(key, JSON.stringify({ value, expiry: new Date().getTime() + ttl }))
+		return value
+	}
+	const load = key => {
+		const itemStr = localStorage.getItem(key)
+		if (!itemStr) return null
+		const item = JSON.parse(itemStr)
+		return new Date().getTime() > item.expiry ? localStorage.removeItem(key) : item.value
+	}
+	const TSH = s => { for(var i=0,h=9;i<s.length;)h=Math.imul(h^s.charCodeAt(i++),9**9);return h^h>>>9 }
 
+	const cacheFn = async (apiFn, args) => {
+		const hashKey = TSH(JSON.stringify(args))
+		const result = load(hashKey)
+		return result ? result : store(hashKey, await apiFn(...args))
+	}
+	const driveList = (...args) => cacheFn(gapi.client.drive.files.list, args)
+	const spreadsheetsGet = (...args) => cacheFn(gapi.client.sheets.spreadsheets.get, args)
+	const sheetsGet = (...args) => cacheFn(gapi.client.sheets.spreadsheets.values.get, args)
+	const sheetsFilterGet = (...args) => cacheFn(gapi.client.sheets.spreadsheets.values.batchGetByDataFilter, args)
+	const sheetsUpdate = (...args) => cacheFn(gapi.client.sheets.spreadsheets.values.batchUpdate, args)
+	// in order to cache requests we have to fill in as if they have returned new data, so we have to update cache
+	const updateSheetsGet = (args, sheet, dates) => {
+		const hashKey = TSH(JSON.stringify([args]))
+		const res = load(hashKey)
+		for (const date in dates) {
+			const {x, y, days, notes, role} = sheet.data[date]
+			console.log(x, y - 5, days, notes, role)
+			res.result.values[y - 5][x] = days
+			res.result.values[y - 5][x + 1] = notes
+			res.result.values[y - 5][x + 2] = role
+		}
+		return store(hashKey, res)
+	}
+
+	// ---------------------------------------------------------- Sheets ------------------------------------------------------------------
 	async function getFolderId({driveId, folderName}) {
-		return (await gapi.client.drive.files.list({
+		return (await driveList({
 			driveId,
 			corpora: 'drive',
 			supportsAllDrives: true,
@@ -273,7 +262,7 @@
 	}
 
 	async function getSpreadSheetFiles({driveId, folderId, exclude=[]}) {
-		return (await gapi.client.drive.files.list({
+		return (await driveList({
 			driveId,
 			corpora: 'drive',
 			supportsAllDrives: true,
@@ -285,7 +274,7 @@
 	}
 
 	async function getSheetNames(spreadSheets) {
-		return Object.fromEntries((await Promise.all(spreadSheets.map(({id, name, sheets}) => gapi.client.sheets.spreadsheets.values.batchGetByDataFilter({
+		return Object.fromEntries((await Promise.all(spreadSheets.map(({id, name, sheets}) => sheetsFilterGet({
 			spreadsheetId: id,
 			resource: {
 				dataFilters: sheets.map(sheet => ({
@@ -316,11 +305,9 @@
 		}
 	}
 
-	// cache gapi.client.sheets.spreadsheets.get request hash into localStorage
-
 	async function getSpreadSheets({driveId, folderId, exclude=[]}) {
 		const companies = await getSpreadSheetFiles({driveId, folderId, exclude })
-		const spreadSheets = (await Promise.all(companies.map(company => gapi.client.sheets.spreadsheets.get({spreadsheetId: company.id}))))
+		const spreadSheets = (await Promise.all(companies.map(company => spreadsheetsGet({spreadsheetId: company.id}))))
 			.map(file => ({
 				id: file.result.spreadsheetId,
 				name: file.result.properties.title,
@@ -339,7 +326,7 @@
 	// spreadsheets[sheets[sheet{data{'01 April 2022':{holiday, y, x, days, notes, role}}}]]
 	async function loadSheetData(spreadsheetId, sheet, fullName) {
 		const range = `'${sheet.name}'!A${HEADER_SPACE}:${sheetColumn(sheet.columns)}`
-		const table = (await gapi.client.sheets.spreadsheets.values.get({spreadsheetId, range})).result.values
+		const table = (await sheetsGet({spreadsheetId, range})).result.values
 		sheet.data = {}
 		// skips the first 2 headers
 		for (let y = 2; y < table.length; y++) {
@@ -366,18 +353,19 @@
 
 	// ---------------------------------------------------------- UI ------------------------------------------------------------------
 	const state = {}
-	function updateSheet(sheet, dates, response) {
+	function updateSheet(spreadsheetId, sheet, dates, response) {
 		console.log(response.result)
 		for (const date in dates) {
-			const [days, notes, role] = dates[date].values
+			const [days, notes, role] = dates[date].values[0]
 			Object.assign(sheet.data[date], { days, notes, role })
 		}
+		const range = `'${sheet.name}'!A${HEADER_SPACE}:${sheetColumn(sheet.columns)}`
+		updateSheetsGet({spreadsheetId, range}, sheet, dates)
 	}
 
 	const hideReportBox = (div, text, input) => {
 		div.style.height = '0px'
 		div.style.visibility = 'hidden'
-		text.value = input.value = ''
 	}
 
 	function ChangeDate(selectedDates) {
@@ -393,19 +381,24 @@
 		div.style.visibility = 'visible'
 		div.style.height = 'auto'
 
-		const dates = Object.fromEntries(selectedDates
-			.map(date => `${date.day} ${date.month.name} ${date.year}`)
-			.map(date => ({date, ...sheet.data[date]}))
-			.map(({date, y, x}) => [date, {
-				range: `'${sheet.name}'!${sheetColumn(x)}${y}:${sheetColumn(x + 2)}${y}`,
-				values: [ [$('input[name="company-time"]:checked').id, text.value, input.value] ]
-			}])
-		)
 		button.onclick = e => {
-			gapi.client.sheets.spreadsheets.values
-				.batchUpdate({ spreadsheetId, resource: { data: Object.values(dates), valueInputOption: 'USER_ENTERED' } })
-				.then(response => updateSheet(sheet, dates, response))
-			hideReportBox(div, text, input)
+			const dates = Object.fromEntries(selectedDates
+				.map(date => `${date.day} ${date.month.name} ${date.year}`)
+				.map(date => ({date, ...sheet.data[date]}))
+				.map(({date, y, x}) => [date, {
+					range: `'${sheet.name}'!${sheetColumn(x)}${y}:${sheetColumn(x + 2)}${y}`,
+					values: [ [$('input[name="company-time"]:checked').id, text.value, input.value] ]
+				}])
+			)
+			$('.lds-roller').style.visibility = 'visible'
+			sheetsUpdate({ spreadsheetId, resource: { data: Object.values(dates), valueInputOption: 'USER_ENTERED' } })
+				.then(response => {
+					updateSheet(spreadsheetId, sheet, dates, response)
+					hideReportBox(div, text, input)
+					text.value = input.value = ''
+					$('.lds-roller').style.visibility = 'hidden'
+					$('.deselect')?.click()
+				})
 		}
 	}
 
@@ -418,12 +411,12 @@
 		const isFullDay = days === '1' 
 		const isHalfDay = parseFloat(days) < 1 && parseFloat(days) > 0 
 		const selected = isSameDate(date, selectedDate)
-		const color = isToday && 'green' || isFullDay && 'limegreen' || isHalfDay && 'yellow' || selected && '#777'
+		const color = isToday && 'green' || (isFullDay || holiday) && 'limegreen' || (isHalfDay || notes) && 'orange' ||  selected && '#777'
 		return {
 			style: {
 				borderRadius: '50%',
 				backgroundColor: selected ? "#a5a5a5" : date.month.index === currentMonth.index && '#ccc',	// This Month
-				border: color && `1px solid ${color}`,
+				border: color && `${holiday ? 3 : 1}px solid ${color}`,
 				color: selected && "#0074d9",
 				fontWeight: selected && "bold",
 				background: selected && '#0074d9!important',
