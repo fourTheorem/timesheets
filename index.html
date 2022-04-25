@@ -447,7 +447,7 @@
 		const isFullDay = days === '1' 
 		const isHalfDay = parseFloat(days) < 1 && parseFloat(days) > 0 
 		const selected = isSameDate(date, selectedDate)
-		const color = isToday && 'green' || (isFullDay || holiday) && 'limegreen' || (isHalfDay || notes) && 'orange' ||  selected && '#777'
+		const color = holiday && '#c3c3c3' || isToday && 'green' || isFullDay && 'limegreen' || (isHalfDay || notes) && 'orange' ||  selected && '#777'
 		return {
 			style: {
 				borderRadius: '50%',
@@ -455,7 +455,7 @@
 				border: color && `${holiday ? 3 : 1}px solid ${color}`,
 				color: selected && "#0074d9",
 				fontWeight: selected && "bold",
-				background: selected && '#0074d9!important',
+				background: holiday ? '#e5ff27' : selected && '#0074d9!important',
 				boxShadow: selected && '0 0 3px #8798ad'
 			},
 			disabled: isWeekend || isFullDay || isHalfDay || holiday,
