@@ -386,6 +386,9 @@
 
 	// ---------------------------------------------------------- UI ------------------------------------------------------------------
 	const state = {}
+
+	$('.lds-roller').style.visibility = 'hidden'
+
 	function updateSheet(spreadsheetId, sheet, dates, response) {
 		console.log(response.result)
 		for (const date in dates) {
