@@ -210,8 +210,8 @@
 
 	const getSheetOptions = (spreadSheets, name) => spreadSheets.filter(spreadsheet => spreadsheet.people.has(name)).map((o, i) => ({id: o.id, name: o.name, default: !i}))
 	const reportAlreadySubmitted = (sheet, selectedDates) => selectedDates
-		.map(date => sheet.data[`${date.day} ${date.month.name} ${date.year}`])
-		.every(({holiday, days, notes}) => holiday || days && notes)
+		.map(date => ({...sheet.data[`${date.day} ${date.month.name} ${date.year}`], date}))
+		.every(({holiday, days, notes, date}) => holiday || days && notes || ['Saturday', 'Sunday'].includes(date.weekDay.name))
 
 	// ---------------------------------------------------------- Auth ------------------------------------------------------------------
 	// https://console.cloud.google.com/apis/api/sheets.googleapis.com/credentials?project=sheetsapp-347722
@@ -473,7 +473,7 @@
 						React.createElement('div', {className: ['rmdp-toolbar', 'bottom', 'rmdp-border-bottom'].join(' '), children: [
 							React.createElement('div', { className: 'button button-today', onClick: () => {
 								const today = new DateObject({ calendar: props.state.calendar, locale: props.state.date.locale, format: props.state.format })
-								const selectedDate = reportAlreadySubmitted(state.sheet, [today]) ? [] : [today]
+								const selectedDate = state.sheet.data && !reportAlreadySubmitted(state.sheet, [today]) ? [today] : []
 								handleFocusedDate(today, handleChange(selectedDate, { ...props.state, selectedDate }))
 							}}, 'Today'),
 							React.createElement('div', {
