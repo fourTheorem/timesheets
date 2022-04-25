@@ -9,3 +9,8 @@ Changelog
 ---
 
 - added caching mechanism, so that the spreadsheet data is cached for 7 days.
+
+# Improvements
+
+consider using [Hello Week](https://hello-week.com/#/) instead for more responsive and zero dependency calendar.
+
