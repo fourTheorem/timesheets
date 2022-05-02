@@ -208,7 +208,16 @@
 		}		
 	}
 
-	const getSheetOptions = (spreadSheets, name) => spreadSheets.filter(spreadsheet => spreadsheet.people.has(name)).map((o, i) => ({id: o.id, name: o.name, default: !i}))
+	const getSheetOptions = (spreadSheets, name, thisMonth) => spreadSheets
+		.filter(spreadsheet => 
+			spreadsheet.people.has(name) &&	// if this is true
+			spreadsheet.sheets.find(sheet =>
+				sheet.name === thisMonth &&
+				sheet.people.includes(name)	// you still could not be included in this month
+			)
+		)
+		.map((o, i) => ({id: o.id, name: o.name, default: !i}))
+
 	const reportAlreadySubmitted = (sheet, selectedDates) => selectedDates
 		.map(date => ({...sheet.data[`${date.day} ${date.month.name} ${date.year}`], date}))
 		.every(({holiday, days, notes, date}) => holiday || days && notes || ['Saturday', 'Sunday'].includes(date.weekDay.name))
@@ -365,7 +374,7 @@
 		for (let y = 2; y < table.length; y++) {
 			const date = table[y][0]
 			// check if date column is still there
-			if (isNaN(new Date(date))) break
+			if (isNaN(new Date(date))) continue
 			sheet.data[date] = {
 				holiday: (holidays.isHoliday(new Date(date)) || []).find(h => h.type == 'public')?.name || '',
 				y: y + HEADER_SPACE,
@@ -438,10 +447,11 @@
 		}
 	}
 
-	function processDay({date, today, selectedDate, currentMonth, isSameDate, sheet }) {
-		if (!sheet) return
-		const isWeekend = [0, 6].includes(date.weekDay.index)  		
-		const {days, notes, role, holiday, xy} = sheet.data[`${date.day} ${date.month.name} ${date.year}`]
+	function processDay({date, today, selectedDate, currentMonth, isSameDate, state }) {
+		const currentDay = state.sheet?.data?.[`${date.day} ${date.month.name} ${date.year}`]
+		if (!currentDay) return
+		const isWeekend = [0, 6].includes(date.weekDay.index)
+		const {days, notes, role, holiday, xy} = currentDay
 		const title = holiday || notes
 		const isToday = isSameDate(date, today)
 		const isFullDay = days === '1' 
@@ -502,7 +512,7 @@
 				onlyYearPicker: false,
 				format:	'DD/MM/YYYY',
 				weekStartDayIndex: 1,
-				mapDays: o => processDay({ ...o, ...state })
+				mapDays: o => processDay({ ...o, state })
 			}),
 			document.getElementById("datePickerWithPlugin")
 		)
@@ -526,13 +536,13 @@
 			{ id: 0, name: '🚫 Off' }
 		]})
 
-		radioButtons({name: 'company-name', options: getSheetOptions(spreadSheets, fullName), onChanged: async e => {
+		const thisMonth = new Date().toLocaleString('en', { month: 'long' }) // there is another way through the library => new DateObject(new Date()).
+
+		radioButtons({name: 'company-name', options: getSheetOptions(spreadSheets, fullName, thisMonth), onChanged: async e => {
 			$('.lds-roller').style.visibility = 'visible'
 			const spreadsheetId = state.spreadsheetId = e.currentTarget.id
 			const spreadSheet = spreadSheets.find(spreadSheet => spreadSheet.id === spreadsheetId)
-			const thisMonth = new Date().toLocaleString('en', { month: 'long' }) // there is another way through the library => new DateObject(new Date()).
 			const sheet = state.sheet = spreadSheet.sheets.find(sheet => sheet.name === thisMonth)
-			// console.log('sheet loaded')
 			await loadSheetData(spreadsheetId, sheet, fullName)
 			$('.deselect')?.click()
 			$('.button-today')?.click()
