@@ -29,11 +29,15 @@
 		.reportBox {width: 98%; height: 80px}
 		.p480 { width: 100%; visibility: hidden; height: 0px }
 		.flexBox { display:flex; justify-content: center; align-items: center; flex-direction: column; }
-		.flexRows {
-			display:flex; flex-direction: row; 
+		.boxContent {
+			/* display:flex; flex-direction: row;  */
 			background: #293450; color: #ffdd84; line-height: 200%; padding: 3px; border-radius: 4px 
 		}
-		.flexRows > div { margin: 20px }
+		.boxContent > div {
+			display: absolute;
+			margin: 20px;
+			float: right
+		}
 		.button, #submitInput {
 			display:inline-block;
 			padding:0.7em 1.7em;
@@ -158,13 +162,12 @@
 		<button id="authorize_button" class="pulsingButton" style="display: none; float:right; font-size: 24px">Authorize</button>
 		<button id="signout_button" style="display: none; float:right; font-size: 24px">Sign Out</button>
 		<br><br><br><br><br>
-		<div class="flexRows">
+		<div class="boxContent">
+			<button style="float: right; font-size: 22px; margin: 10px" onclick="localStorage.clear();window.location.href=window.location.href">Clear Cache</button>
 			<div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
 			<div id="company-name"></div>
 			<div id="company-time"></div>
 		</div>
-		<br>
-		<button style="float: right; font-size: 22px; margin: 10px" onclick="localStorage.clear();window.location.href=window.location.href">Clear Cache</button>
 	</div>
 
 
@@ -220,13 +223,13 @@
 
 	const reportAlreadySubmitted = (sheet, selectedDates) => selectedDates
 		.map(date => ({...sheet.data[`${date.day} ${date.month.name} ${date.year}`], date}))
-		.every(({holiday, days, notes, date}) => holiday || days && notes || ['Saturday', 'Sunday'].includes(date.weekDay.name))
+		.every(({holiday, days, notes, date}) => holiday || days == 1 && notes || ['Saturday', 'Sunday'].includes(date.weekDay.name))
 
 	// ---------------------------------------------------------- Auth ------------------------------------------------------------------
 	// https://console.cloud.google.com/apis/api/sheets.googleapis.com/credentials?project=sheetsapp-347722
 	const authorizeButton = $('#authorize_button')
 	const signoutButton = $('#signout_button')
-	
+
 	function updateSigninStatus(authInstance) {
 		const signIn = authInstance.isSignedIn?.get()
 		authorizeButton.style.display = signIn ? 'none' : 'block'
@@ -449,6 +452,19 @@
 
 	function processDay({date, today, selectedDate, currentMonth, isSameDate, state }) {
 		const currentDay = state.sheet?.data?.[`${date.day} ${date.month.name} ${date.year}`]
+
+		// update this month's data if not there
+		const thisMonth = currentMonth.name	
+		if (state.spreadSheets && state.currentMonth !== thisMonth) {
+			const spreadsheetId = state.spreadsheetId
+			const spreadSheet = state.spreadSheets.find(spreadSheet => spreadSheet.id === spreadsheetId)
+			const sheet = state.sheet = spreadSheet.sheets.find(sheet => sheet.name === thisMonth)
+			state.currentMonth = thisMonth
+			loadSheetData(spreadsheetId, sheet, state.fullName).then(() => {
+				$('.deselect')?.click()
+			})
+		}
+
 		if (!currentDay) return
 		const isWeekend = [0, 6].includes(date.weekDay.index)
 		const {days, notes, role, holiday, xy} = currentDay
@@ -521,23 +537,24 @@
 	async function main(authInstance) {
 		const fullName = authInstance.currentUser.get().getBasicProfile().getName()
 		$('#intro-person').innerText = fullName
+		state.fullName = fullName
 		loadUI()
 
 		const driveId = '0AEEJTsIdzOw3Uk9PVA'
-		const spreadSheets = await getSpreadSheets({
+		const spreadSheets = state.spreadSheets = await getSpreadSheets({
 			driveId,
 			folderId: await getFolderId({driveId, folderName: 'timesheets'}),
 			exclude: ['2017', '2018', '2019', '2020', '2021']
 		})
 
 		radioButtons({name: 'company-time', options: [
-			{ id: 1, name: '⏳ Full Day', default: true },
-			{ id: 0.5, name: '⌛ Half Day'},
-			{ id: 0, name: '🚫 Off' }
+			{ id: '1', name: '⏳ Full Day', default: true },
+			{ id: '0.5', name: '⌛ Half Day'},
+			{ id: '0', name: '🚫 Off' }
 		]})
 
 		const thisMonth = new Date().toLocaleString('en', { month: 'long' }) // there is another way through the library => new DateObject(new Date()).
-
+		state.currentMonth = thisMonth
 		radioButtons({name: 'company-name', options: getSheetOptions(spreadSheets, fullName, thisMonth), onChanged: async e => {
 			$('.lds-roller').style.visibility = 'visible'
 			const spreadsheetId = state.spreadsheetId = e.currentTarget.id
