@@ -558,7 +558,7 @@
 		const spreadSheets = state.spreadSheets = await getSpreadSheets({
 			driveId,
 			folderId: await getFolderId({driveId, folderName: 'timesheets'}),
-			exclude: ['2017', '2018', '2019', '2020', '2021']
+			exclude: ['2017', '2018', '2019', '2020', '2021', '2022']
 		})
 
 		radioButtons({name: 'company-time', options: [
