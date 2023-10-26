@@ -300,11 +300,12 @@
 		const hashKey = TSH(JSON.stringify([args]))
 		const res = load(hashKey)
 		for (const date in dates) {
-			const {x, y, days, notes, role} = sheet.data[date]
-			console.log(x, y - 5, days, notes, role)
+			const {x, y, days, notes, mapCode, role} = sheet.data[date]
+			console.log(x, y - 5, days, notes, mapCode, role)
 			res.result.values[y - 5][x] = days
 			res.result.values[y - 5][x + 1] = notes
-			res.result.values[y - 5][x + 2] = role
+			res.result.values[y - 5][x + 2] = mapCode
+			res.result.values[y - 5][x + 3] = role
 		}
 		return store(hashKey, res)
 	}
@@ -404,8 +405,8 @@
 				fuzzyMatch(fullName, name) && Object.assign(sheet.data[date], {
 					days: table[y][x] || '0',
 					notes: table[y][x + 1] || '',
-					role: table[y][x + 2] || '',
-					mapCode: table[y][x + 3] || ''
+					mapCode: table[y][x + 2] || ''
+					role: table[y][x + 3] || '',
 				})
 			}
 		}
