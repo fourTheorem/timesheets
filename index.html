@@ -124,6 +124,7 @@
 		#parentInput { display: flex; flex-direction: column }
 		#intro-person { font-size: 200%; }
 		#roleInput { font-size: 20px }
+		#mapCodeInput { font-size: 22px }
 		#reportInput { font-size: 22px }
 		.pulsingButton {
 			width: 220px;
@@ -398,12 +399,13 @@
 				x: table[0].filter(name => name).slice(1).map((name, index) => ({name, index})).find(o => o.name.includes(fullName))?.index * 3 + 1
 			}
 			// itterate through all the people, skip date column
-			for (let x = 1; x < table[y].length; x += 3) {
-				const name = table[0].slice(x, x + 3).join('')
+			for (let x = 1; x < table[y].length; x += 4) {
+				const name = table[0].slice(x, x + 4).join('')
 				fuzzyMatch(fullName, name) && Object.assign(sheet.data[date], {
 					days: table[y][x] || '0',
 					notes: table[y][x + 1] || '',
-					role: table[y][x + 2] || ''
+					role: table[y][x + 2] || '',
+					mapCode: table[y][x + 3] || ''
 				})
 			}
 		}
@@ -425,7 +427,7 @@
 		updateSheetsGet({spreadsheetId, range}, sheet, dates)
 	}
 
-	const hideReportBox = (div, text, input) => {
+	const hideReportBox = div => {
 		div.style.height = '0px'
 		div.style.visibility = 'hidden'
 	}
@@ -435,9 +437,10 @@
 		const div = $('#parentInput')
 		const button = $('#submitInput')
 		const text = $('#reportInput')
+		const mapCode = $('mapCodeInput')
 		const input = $('#roleInput')
 
-		hideReportBox(div, text, input)
+		hideReportBox(div)
 		if (!selectedDates.length || reportAlreadySubmitted(sheet, selectedDates)) return // console.log('>>>', selectedDates, sheet.data)
 		// make sure to deselect all invalid dates
 		div.style.visibility = 'visible'
@@ -448,16 +451,17 @@
 				.map(date => `${date.day} ${date.month.name} ${date.year}`)
 				.map(date => ({date, ...sheet.data[date]}))
 				.map(({date, y, x}) => [date, {
-					range: `'${sheet.name}'!${sheetColumn(x)}${y}:${sheetColumn(x + 2)}${y}`,
-					values: [ [$('input[name="company-time"]:checked').id, text.value, input.value] ]
+					range: `'${sheet.name}'!${sheetColumn(x)}${y}:${sheetColumn(x + 3)}${y}`,
+					values: [ [$('input[name="company-time"]:checked').id, text.value, input.value, mapCode.value] ]
 				}])
 			)
 			$('.lds-roller').style.visibility = 'visible'
 			sheetsUpdate({ spreadsheetId, resource: { data: Object.values(dates), valueInputOption: 'USER_ENTERED' } })
 				.then(response => {
 					updateSheet(spreadsheetId, sheet, dates, response)
-					hideReportBox(div, text, input)
+					hideReportBox(div)
 					text.value = input.value = ''
+					mapCode.value = 'None'
 					$('.lds-roller').style.visibility = 'hidden'
 					$('.deselect')?.click()
 				})
@@ -530,6 +534,14 @@
 							React.createElement('div', { id: 'parentInput', className: 'p480', children: [
 								React.createElement('input', { id: 'roleInput', placeholder: 'Role: E.g. Architect' }),
 								React.createElement('textarea', { id: 'reportInput', className: 'reportBox', placeholder: 'What did you do?' }),
+
+								React.createElement('select', {
+									id: 'mapCodeInput',
+									className: 'p480',
+									children: ['None', 'Multi-Year', 'Data-Migration', 'App-Portfolio'].map(mapCode =>
+										React.createElement('option', { value: mapCode}, mapCode)
+									)
+								}),
 								React.createElement('button', { id: 'submitInput', placeholder: 'Submit' }, 'Submit Report'),
 							]})
 						] }), {position: 'bottom'}
