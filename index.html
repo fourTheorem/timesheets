@@ -452,7 +452,7 @@
 				.map(date => ({date, ...sheet.data[date]}))
 				.map(({date, y, x}) => [date, {
 					range: `'${sheet.name}'!${sheetColumn(x)}${y}:${sheetColumn(x + 3)}${y}`,
-					values: [ [$('input[name="company-time"]:checked').id, text.value, input.value, mapCode.value] ]
+					values: [ [$('input[name="company-time"]:checked').id, text.value, mapCode.value, input.value] ]
 				}])
 			)
 			$('.lds-roller').style.visibility = 'visible'
@@ -532,15 +532,14 @@
 					React.createElement(({ state, handleChange, position, calendarProps, nodes, names, handleFocusedDate, DatePicker, ...props}) =>
 						React.createElement('div', {className: ['rmdp-toolbar', 'bottom', 'rmdp-border-bottom'].join(' '), children: [
 							React.createElement('div', { id: 'parentInput', className: 'p480', children: [
-								React.createElement('input', { id: 'roleInput', placeholder: 'Role: E.g. Architect' }),
-								React.createElement('textarea', { id: 'reportInput', className: 'reportBox', placeholder: 'What did you do?' }),
-
 								React.createElement('select', {
 									id: 'mapCodeInput',
 									children: ['None', 'Multi-Year', 'Data-Migration', 'App-Portfolio'].map(mapCode =>
 										React.createElement('option', { value: mapCode}, mapCode)
 									)
 								}),
+								React.createElement('input', { id: 'roleInput', placeholder: 'Role: E.g. Architect' }),
+								React.createElement('textarea', { id: 'reportInput', className: 'reportBox', placeholder: 'What did you do?' }),
 								React.createElement('button', { id: 'submitInput', placeholder: 'Submit' }, 'Submit Report'),
 							]})
 						] }), {position: 'bottom'}
